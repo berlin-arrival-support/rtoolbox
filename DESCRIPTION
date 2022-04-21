@@ -1,0 +1,21 @@
+Package: rtoolbox
+Title: R Functions and Tools for BAS
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Malte", "Kyhos", , "mkyhos@protonmail.com", role = c("aut", "cre"))
+    )
+Description: Collection of functions used for BAS, 2022
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Imports:
+    data.table,
+    ggplot2,
+    checkmate,
+    DBI,
+    RPostgres
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.0.0
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

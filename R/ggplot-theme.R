@@ -9,7 +9,6 @@ bas_color_palette <- list(
 #' @title Add BAS Logo
 #'
 #' @description
-#' @importFrom grid unit
 #' @export
 add_bas_logo <- function() {
   structure(
@@ -20,7 +19,6 @@ add_bas_logo <- function() {
 }
 
 #' @importFrom rlang `%||%`
-#' @importFrom grImport2 readPicture symbolsGrob
 add_bas_logo_ <- function(p) {
   base_size <- p$theme$text$size %||% 11
   logo_width <- base_size * 2.1

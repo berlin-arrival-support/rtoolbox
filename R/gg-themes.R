@@ -14,7 +14,7 @@ theme_bas <- function(base_size = 14,
 
   structure(
     list(),
-    class = "theme_bas",
+    class = "bas_theme",
     fn = "theme_bas_",
     args = list(
       base_size = base_size,
@@ -128,7 +128,7 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
 
 #' @importFrom ggplot2 ggplot_add
 #' @export
-ggplot_add.theme_bas <- function(object, p, objectname) {
+ggplot_add.bas_theme <- function(object, p, objectname) {
   do.call(
     attr(object, "fn"),
     c(list(p), attr(object, "args"))

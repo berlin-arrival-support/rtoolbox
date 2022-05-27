@@ -13,7 +13,8 @@ Imports:
     checkmate,
     DBI,
     RPostgres,
-    systemfonts
+    systemfonts,
+    gtable
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0

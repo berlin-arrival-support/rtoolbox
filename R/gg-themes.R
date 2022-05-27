@@ -34,6 +34,8 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
     p$labels$y <- paste(p$labels$y, "\u2191")
   }
 
+  text_colour_subtle <- "grey45"
+
   t <- ggplot2::theme_minimal(
     base_size = base_size,
     base_line_size = base_line_size,
@@ -44,7 +46,7 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
         family = "Inter tnum",
         colour = "grey10"
       ),
-      line = ggplot2::element_line(colour = "grey80"),
+      line = ggplot2::element_line(colour = "grey92"),
       plot.title = ggplot2::element_text(
         face = "bold",
         size = ggplot2::rel(1.5),
@@ -66,29 +68,28 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
       axis.title.y = ggplot2::element_text(
         face = "bold",
         angle = 0,
-        vjust = 1.07,
         margin = grid::unit.c(
-          grid::unit(base_size * 2 / 3, "pt"), # FIXME: doesn't have any effect
+          grid::unit(0, "pt"),
           grid::unit(-1, "strwidth", data = p$labels$y),
-          grid::unit(base_size * 2 / 3, "pt"),
+          grid::unit(0, "pt"),
           grid::unit(0, "pt")
         )
       ),
       axis.text.x = ggplot2::element_text(
-        colour = "grey45",
+        colour = text_colour_subtle,
         margin = ggplot2::margin(t = base_size / 3)
       ),
       axis.text.y = ggplot2::element_text(
-        colour = "grey45",
+        colour = text_colour_subtle,
         margin = ggplot2::margin(r = base_size / 3)
       ),
       legend.key.size = grid::unit(base_size * 1.1, "pt"),
       legend.title = ggplot2::element_text(
         face = "bold",
-        colour = "grey45",
+        colour = text_colour_subtle,
         vjust = grid::unit(1, "npc") - grid::unit(base_size / 14, "pt")
       ),
-      legend.text = ggplot2::element_text(colour = "grey45"),
+      legend.text = ggplot2::element_text(colour = text_colour_subtle),
       legend.position = "top",
       legend.justification = "left",
       strip.background = ggplot2::element_blank(),
@@ -96,12 +97,6 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
       panel.spacing = ggplot2::unit(base_size, "pt"),
       panel.grid.major = ggplot2::element_line(size = ggplot2::rel(.7)),
       panel.grid.minor = ggplot2::element_line(size = ggplot2::rel(.7)),
-      panel.background = ggplot2::element_rect(
-        fill = "transparent", colour = "transparent"
-      ),
-      plot.background = ggplot2::element_rect(
-        fill = "transparent", colour = "transparent"
-      ),
       plot.margin = ggplot2::margin(
         t = base_size * 1.4, r = base_size * 1.4,
         b = base_size * 1.4, l = base_size * 1.4
@@ -123,7 +118,40 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
     t <- t + ggplot2::theme(panel.grid.minor.y = ggplot2::element_blank())
   }
 
-  p + t
+  pt <- ggplot2::ggplotGrob(p + t)
+
+  ylab_grob_idx <- which_ylab_grob(pt)
+
+  if (isTRUE(nzchar(p$labels$y))) {
+    ylab_grob <- pt$grobs[[ylab_grob_idx]]
+
+    pt$grobs[[ylab_grob_idx]]$children[[1]] <- NULL
+
+    pt <- gtable::gtable_add_rows(
+      pt,
+      grid::unit(1, "strheight", data = p$labels$y) + grid::unit(base_size, "pt"),
+      pt$layout[ylab_grob_idx, "t"] - 1
+    )
+
+    pt <- gtable::gtable_add_grob(
+      pt,
+      ylab_grob,
+      t = pt$layout[ylab_grob_idx, "t"] - 1, l = pt$layout[ylab_grob_idx, "l"],
+      clip = "off"
+    )
+  }
+
+  as_ggplot.gtable(pt)
+}
+
+which_ylab_grob <- function(gtable) {
+  which(gtable$layout$name == "ylab-l")
+}
+
+as_ggplot.gtable <- function(gtable) {
+  ggplot2::ggplot() +
+    ggplot2::annotation_custom(gtable) +
+    ggplot2::theme_void()
 }
 
 #' @importFrom ggplot2 ggplot_add

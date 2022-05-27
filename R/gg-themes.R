@@ -34,6 +34,10 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
     p$labels$y <- paste(p$labels$y, "\u2191")
   }
 
+  if (is.null(p$labels$y)) {
+    p$labels$y <- ""
+  }
+
   text_colour_subtle <- "grey45"
 
   t <- ggplot2::theme_minimal(
@@ -65,6 +69,11 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
         hjust = 1,
         margin = ggplot2::margin(t = base_size * 2 / 3)
       ),
+      axis.title.x.top = ggplot2::element_text(
+        face = "bold",
+        hjust = 1,
+        margin = ggplot2::margin(b = base_size * 2 / 3)
+      ),
       axis.title.y = ggplot2::element_text(
         face = "bold",
         angle = 0,
@@ -73,6 +82,17 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
           grid::unit(-1, "strwidth", data = p$labels$y),
           grid::unit(0, "pt"),
           grid::unit(0, "pt")
+        )
+      ),
+      axis.title.y.right = ggplot2::element_text(
+        face = "bold",
+        angle = 0,
+        vjust = 1,
+        margin = grid::unit.c(
+          grid::unit(0, "pt"),
+          grid::unit(0, "pt"),
+          grid::unit(0, "pt"),
+          grid::unit(-1, "strwidth", data = p$labels$y)
         )
       ),
       axis.text.x = ggplot2::element_text(
@@ -118,40 +138,44 @@ theme_bas_ <- function(p, base_size, base_line_size, base_rect_size, grid) {
     t <- t + ggplot2::theme(panel.grid.minor.y = ggplot2::element_blank())
   }
 
-  pt <- ggplot2::ggplotGrob(p + t)
+  ret <- ylab_bas(p + t, base_size)
+
+  structure(ret, class = c("bas_gg", class(ret)))
+}
+
+ylab_bas <- function(p, base_size) {
+  pt <- ggplot2::ggplotGrob(p)
+
+  if (!isTRUE(nzchar(p$labels$y))) return(pt)
 
   ylab_grob_idx <- which_ylab_grob(pt)
 
-  if (isTRUE(nzchar(p$labels$y))) {
-    ylab_grob <- pt$grobs[[ylab_grob_idx]]
+  ylab_grob <- pt$grobs[[ylab_grob_idx]]
 
-    pt$grobs[[ylab_grob_idx]]$children[[1]] <- NULL
+  pt$grobs[[ylab_grob_idx]]$children[[1]] <- NULL
 
-    pt <- gtable::gtable_add_rows(
-      pt,
-      grid::unit(1, "strheight", data = p$labels$y) + grid::unit(base_size, "pt"),
-      pt$layout[ylab_grob_idx, "t"] - 1
-    )
+  pt <- gtable::gtable_add_rows(
+    pt,
+    grid::unit(1, "strheight", data = p$labels$y) + grid::unit(base_size, "pt"),
+    pt$layout[ylab_grob_idx, "t"] - 1
+  )
 
-    pt <- gtable::gtable_add_grob(
-      pt,
-      ylab_grob,
-      t = pt$layout[ylab_grob_idx, "t"] - 1, l = pt$layout[ylab_grob_idx, "l"],
-      clip = "off"
-    )
-  }
+  pt <- gtable::gtable_add_grob(
+    pt,
+    ylab_grob,
+    t = pt$layout[ylab_grob_idx, "t"] - 1, l = pt$layout[ylab_grob_idx, "l"],
+    clip = "off"
+  )
 
-  as_ggplot.gtable(pt)
+  pt
+}
+
+is_ylab_grob <- function(grob) {
+  grepl("^axis.title.y", grob$name) && !inherits(grob, "zeroGrob")
 }
 
 which_ylab_grob <- function(gtable) {
-  which(gtable$layout$name == "ylab-l")
-}
-
-as_ggplot.gtable <- function(gtable) {
-  ggplot2::ggplot() +
-    ggplot2::annotation_custom(gtable) +
-    ggplot2::theme_void()
+  which(vapply(gtable$grobs, is_ylab_grob, logical(1)))
 }
 
 #' @importFrom ggplot2 ggplot_add
@@ -162,3 +186,12 @@ ggplot_add.bas_theme <- function(object, p, objectname) {
     c(list(p), attr(object, "args"))
   )
 }
+
+#' @export
+plot.bas_gg <- function(x, ...) {
+  grid::grid.newpage()
+  grid::grid.draw(x)
+}
+
+#' @export
+print.bas_gg <- plot.bas_gg
